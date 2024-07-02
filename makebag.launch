@@ -1,0 +1,22 @@
+<launch>
+  <!-- Launch RealSense Camera Node -->
+  <include file="$(find realsense2_camera)/launch/rs_camera.launch">
+    <arg name="align_depth" value="true"/>
+    <arg name="linear_accel_cov" value="1.0"/>
+    <arg name="unite_imu_method" value="linear_interpolation"/>
+    <arg name="enable_gyro" value="true"/>
+    <arg name="enable_accel" value="true"/>
+    <arg name="enable_sync" value="true"/>
+    <arg name="color_width" value="640"/>
+    <arg name="color_height" value="480"/>
+    <arg name="depth_width" value="640"/>
+    <arg name="depth_height" value="480"/>
+    <arg name="color_fps" value="10"/>  <!-- Set color camera FPS -->
+    <arg name="depth_fps" value="10"/>  <!-- Set depth camera FPS -->
+  </include>
+
+  <!-- Record data using rosbag -->
+  <node pkg="rosbag" type="record" name="record_bag" output="screen" args="-O /home/fsb/catkin_ws/realsense_data.bag /camera/aligned_depth_to_color/image_raw /camera/color/image_raw /camera/color/camera_info /camera/imu /camera/infra1/image_rect_raw camera/infra1/image_rect_raw." />
+</launch>
+
+
