@@ -1,0 +1,36 @@
+<launch>
+
+  <!-- Set TF Prefix -->
+  <arg name="tf_prefix" default="" />
+
+  <!-- Replay RealSense Data from rosbag -->
+  <node pkg="rosbag" type="play" name="realsense_rosbag" args="--clock /home/fsb/catkin_ws/crta2.bag"> <!-- edit - /path/to/your/.bag -->
+    <param name="pause" value="true" />
+    <param name="start_paused" value="true" />
+  </node>
+
+  <!-- Publish static TF if needed -->
+  <node pkg="tf2_ros" type="static_transform_publisher" name="camera_link_broadcaster" args="0 0 0 0 0 0 camera_link camera_color_optical_frame" />
+
+  <!-- Launch IMU Filter Node -->
+  <node pkg="imu_filter_madgwick" type="imu_filter_node" name="imu_filter_node" output="screen">
+    <param name="use_mag" value="false"/>
+    <param name="publish_tf" value="false"/>
+    <param name="world_frame" value="enu"/>
+    <remap from="/imu/data_raw" to="/camera/imu"/>
+    <remap from="/imu/data" to="/rtabmap/imu"/>
+  </node>
+
+  <!-- Launch RTAB-Map Node -->
+  <include file="$(find rtabmap_launch)/launch/rtabmap.launch">
+    <arg name="rtabmap_args" value="--delete_db_on_start"/>
+    <arg name="depth_topic" value="/camera/aligned_depth_to_color/image_raw"/>
+    <arg name="rgb_topic" value="/camera/color/image_raw"/>
+    <arg name="camera_info_topic" value="/camera/color/camera_info"/>
+    <arg name="approx_sync" value="false"/>
+    <arg name="imu_topic"  value="/rtabmap/imu"/> 
+    <param name="wait_imu_to_init" value="true"/> 
+    <param name="RGBD/OdometryMaxFeatures" value="800" />
+  </include>
+
+</launch>
